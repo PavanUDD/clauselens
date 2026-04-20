@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Artifacts (user data - NEVER commit)
+storage/*.pdf
+storage/*.json
+storage/*.index
+*.faiss
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temp
+temp/
+tmp/
+*.tmp
+
+# Model cache
+models/
+.cache/
+
+# Reports (user-generated)
+reports/

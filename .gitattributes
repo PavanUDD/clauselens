@@ -1,0 +1,8 @@
+# Treat these as non-code for GitHub stats (keeps repo showing as Python)
+*.json linguist-detectable=false
+*.md linguist-documentation=true
+*.html linguist-detectable=false
+*.css linguist-detectable=false
+docs/* linguist-documentation=true
+samples/* linguist-vendored=true
+storage/* linguist-vendored=true
