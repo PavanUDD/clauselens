@@ -11,6 +11,10 @@ import re
 from clauselens.rulebook.schema import Rule, RiskFlag
 from clauselens.rulebook.rental_rules import RENTAL_RULES
 from clauselens.rulebook.employment_rules import EMPLOYMENT_RULES
+from clauselens.rulebook.freelance_rules import FREELANCE_RULES
+from clauselens.rulebook.saas_rules import SAAS_RULES
+from clauselens.rulebook.loan_rules import LOAN_RULES
+from clauselens.rulebook.generic_rules import GENERIC_RULES
 from clauselens.utils.logger import get_logger
 
 log = get_logger(__name__)
@@ -18,6 +22,10 @@ log = get_logger(__name__)
 RULEBOOKS: dict[str, list[Rule]] = {
     "rental": RENTAL_RULES,
     "employment": EMPLOYMENT_RULES,
+    "freelance": FREELANCE_RULES,
+    "saas": SAAS_RULES,
+    "loan": LOAN_RULES,
+    "unknown": GENERIC_RULES,
 }
 
 # Negation phrases that INVALIDATE a match if found right before the keyword
