@@ -54,6 +54,23 @@ with st.sidebar:
 
     st.markdown("---")
 
+    # Download PDF button — only shown after analysis
+    if "analysis" in st.session_state and st.session_state["analysis"]:
+        from clauselens.reporting.pdf_exporter import build_pdf
+        analysis = st.session_state["analysis"]
+        try:
+            pdf_bytes = build_pdf(analysis)
+            fname = analysis.get("filename", "contract").rsplit(".", 1)[0]
+            st.download_button(
+                label="📥 Download PDF Report",
+                data=pdf_bytes,
+                file_name=f"ClauseLens_Report_{fname}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+        except Exception as e:
+            st.warning(f"PDF export failed: {e}")
+
     if st.button("🗑️ Clear All Data", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
