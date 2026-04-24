@@ -12,6 +12,7 @@
 ![FAISS](https://img.shields.io/badge/FAISS-1.8-0467DF)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-v1.0-success)
+![CI](https://github.com/PavanUDD/clauselens/actions/workflows/ci.yml/badge.svg)
 
 </div>
 
