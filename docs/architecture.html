@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ClauseLens — Architecture</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #0a0a0f 0%, #0f0f17 100%);
+  color: #e4e4e7;
+  padding: 50px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(90deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+.diagram {
+  background: #0f0f17;
+  border: 1px solid #1f1f2e;
+  border-radius: 24px;
+  padding: 60px 50px;
+  position: relative;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.node {
+  background: #0a0a0f;
+  border: 1.5px solid #1f1f2e;
+  border-radius: 14px;
+  padding: 22px 26px;
+  min-width: 200px;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.node.input { border-color: #3b82f6; box-shadow: 0 0 30px rgba(59,130,246,0.15); }
+.node.process { border-color: #8b5cf6; box-shadow: 0 0 30px rgba(139,92,246,0.15); }
+.node.output { border-color: #22c55e; box-shadow: 0 0 30px rgba(34,197,94,0.15); }
+.node.engine { border-color: #f59e0b; box-shadow: 0 0 30px rgba(245,158,11,0.15); }
+
+.node-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.node-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f4f4f5;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.node-desc {
+  font-size: 12px;
+  color: #a1a1aa;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.arrow {
+  font-size: 28px;
+  color: #3b82f6;
+  font-weight: 300;
+  user-select: none;
+}
+
+.arrow-down {
+  text-align: center;
+  font-size: 32px;
+  color: #8b5cf6;
+  margin: 8px 0;
+  font-weight: 300;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid #1f1f2e;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #a1a1aa;
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 2px solid;
+}
+
+.dot-input { border-color: #3b82f6; background: rgba(59,130,246,0.2); }
+.dot-process { border-color: #8b5cf6; background: rgba(139,92,246,0.2); }
+.dot-engine { border-color: #f59e0b; background: rgba(245,158,11,0.2); }
+.dot-output { border-color: #22c55e; background: rgba(34,197,94,0.2); }
+
+.privacy-banner {
+  margin-top: 40px;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08));
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+.privacy-banner strong {
+  color: #60a5fa;
+}
+
+.tagline {
+  text-align: center;
+  margin-top: 30px;
+  color: #71717a;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📑 ClauseLens — Architecture</h1>
+    <div class="subtitle">Privacy-first AI contract risk analyzer · 100% local · Zero API calls</div>
+  </div>
+
+  <div class="diagram">
+    <!-- Row 1: Input -->
+    <div class="row">
+      <div class="node input">
+        <div class="node-icon">📄</div>
+        <div class="node-title">PDF Upload</div>
+        <div class="node-desc">Streamlit UI<br>In-memory only</div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+
+    <!-- Row 2: Ingestion -->
+    <div class="row">
+      <div class="node process">
+        <div class="node-icon">🔍</div>
+        <div class="node-title">Ingestion</div>
+        <div class="node-desc">PyMuPDF<br>Page-by-page text</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node process">
+        <div class="node-icon">✂️</div>
+        <div class="node-title">Chunker</div>
+        <div class="node-desc">180-word windows<br>40-word overlap</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node process">
+        <div class="node-icon">🏷️</div>
+        <div class="node-title">Classifier</div>
+        <div class="node-desc">6 contract types<br>Keyword signatures</div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+
+    <!-- Row 3: ML / Retrieval -->
+    <div class="row">
+      <div class="node engine">
+        <div class="node-icon">🧠</div>
+        <div class="node-title">FAISS Index</div>
+        <div class="node-desc">all-MiniLM-L6-v2<br>Cosine similarity</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node engine">
+        <div class="node-icon">💰</div>
+        <div class="node-title">Term Extractor</div>
+        <div class="node-desc">$ amounts, %s,<br>durations, dates</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node engine">
+        <div class="node-icon">⚖️</div>
+        <div class="node-title">Risk Engine</div>
+        <div class="node-desc">76 curated rules<br>Negation-aware</div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+
+    <!-- Row 4: Output -->
+    <div class="row">
+      <div class="node output">
+        <div class="node-icon">📊</div>
+        <div class="node-title">Health Score</div>
+        <div class="node-desc">0-100 rating<br>Letter grade A-F</div>
+      </div>
+      <div class="node output">
+        <div class="node-icon">🚨</div>
+        <div class="node-title">Risk Flags</div>
+        <div class="node-desc">Severity-coded<br>Evidence + scripts</div>
+      </div>
+      <div class="node output">
+        <div class="node-icon">📝</div>
+        <div class="node-title">Plain Summary</div>
+        <div class="node-desc">Template-based<br>No LLM</div>
+      </div>
+      <div class="node output">
+        <div class="node-icon">📥</div>
+        <div class="node-title">PDF Report</div>
+        <div class="node-desc">Downloadable<br>Branded export</div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot dot-input"></div>Input Layer</div>
+      <div class="legend-item"><div class="legend-dot dot-process"></div>Processing Layer</div>
+      <div class="legend-item"><div class="legend-dot dot-engine"></div>ML / Rules Engine</div>
+      <div class="legend-item"><div class="legend-dot dot-output"></div>Output Layer</div>
+    </div>
+
+    <!-- Privacy Banner -->
+    <div class="privacy-banner">
+      🔒 <strong>Every stage runs locally.</strong> No data ever leaves the machine. Zero API calls. Zero persistence. Zero hallucination.
+    </div>
+  </div>
+
+  <div class="tagline">
+    Built for privacy · Engineered for trust · Open source
+  </div>
+</div>
+</body>
+</html>
