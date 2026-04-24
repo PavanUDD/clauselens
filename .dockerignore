@@ -1,0 +1,46 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+.github
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv
+.venv
+env
+*.egg-info
+.pytest_cache
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime artifacts
+storage/*.pdf
+storage/*.json
+storage/*.index
+logs/
+*.log
+temp/
+tmp/
+
+# Model cache (will be regenerated during Docker build)
+.cache
+models
+
+# Docs — not needed in image
+docs
+samples/*.pdf
+
+# Reports
+reports
