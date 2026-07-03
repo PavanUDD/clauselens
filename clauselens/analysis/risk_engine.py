@@ -2,6 +2,8 @@
 
 Features:
 - Negation-aware matching (skips "no rent increase" false positives)
+- Safe harbor matching (downgrades/skips rules when protective language is found)
+- Deposit threshold check (only flags deposit if > 2x monthly rent)
 - Precise snippet extraction centered on the actual regex hit
 - Works on ANY contract — no PDF-specific logic
 """
@@ -15,21 +17,26 @@ from clauselens.rulebook.freelance_rules import FREELANCE_RULES
 from clauselens.rulebook.saas_rules import SAAS_RULES
 from clauselens.rulebook.loan_rules import LOAN_RULES
 from clauselens.rulebook.generic_rules import GENERIC_RULES
+from clauselens.rulebook.nda_rules import NDA_RULES
+from clauselens.rulebook.vendor_rules import VENDOR_RULES
+from clauselens.rulebook.staffing_rules import STAFFING_RULES
 from clauselens.utils.logger import get_logger
 
 log = get_logger(__name__)
 
 RULEBOOKS: dict[str, list[Rule]] = {
-    "rental": RENTAL_RULES,
+    "rental":     RENTAL_RULES,
     "employment": EMPLOYMENT_RULES,
-    "freelance": FREELANCE_RULES,
-    "saas": SAAS_RULES,
-    "loan": LOAN_RULES,
-    "unknown": GENERIC_RULES,
+    "freelance":  FREELANCE_RULES,
+    "saas":       SAAS_RULES,
+    "loan":       LOAN_RULES,
+    "nda":        NDA_RULES,
+    "vendor":     VENDOR_RULES,
+    "staffing":   STAFFING_RULES,
+    "unknown":    GENERIC_RULES,
 }
 
 # Negation phrases that INVALIDATE a match if found right before the keyword
-# (e.g., "no rent increase", "shall not increase")
 NEGATION_RE = re.compile(
     r"\b(?:no|not|never|without|cannot|shall\s+not|will\s+not|may\s+not|"
     r"there\s+(?:will|shall)\s+be\s+no|there\s+are\s+no|is\s+not|are\s+not)\b",
@@ -37,23 +44,14 @@ NEGATION_RE = re.compile(
 )
 
 # Rules where negation IS the concern — don't filter them out
-# (e.g., "no pets" — the restriction itself is the red flag)
 NEGATION_IS_THE_POINT = {
     "RENTAL_R005",   # No subletting
     "RENTAL_R009",   # No pets
     "RENTAL_R015",   # No guests
+    "RENTAL_R008",
     "EMP_R003",      # No severance
     "EMP_R008",      # No overtime
 }
-
-
-def _flatten(items):
-    for item in items:
-        if isinstance(item, tuple):
-            for sub in item:
-                yield sub
-        else:
-            yield item
 
 
 def _is_negated(text: str, match_start: int, window: int = 50) -> bool:
@@ -91,10 +89,8 @@ def _match_rule(rule: Rule, chunks: list[dict]) -> list[dict]:
         if not valid_hits:
             continue
 
-        # Snippet comes from the FIRST valid hit — guarantees evidence matches flag
         first = valid_hits[0]
         snippet = _extract_snippet(text, first.start(), first.end())
-
         keywords = list({m.group(0).lower().strip() for m in valid_hits})
 
         matches.append({
@@ -108,6 +104,29 @@ def _match_rule(rule: Rule, chunks: list[dict]) -> list[dict]:
 
     matches.sort(key=lambda m: m["hit_count"], reverse=True)
     return matches
+
+
+def _check_safe_harbor(rule: Rule, evidence: list[dict]) -> bool:
+    """
+    Returns True if safe harbor language is found in ANY of the matching chunks.
+    Safe harbor = the clause already contains the protection we were worried about.
+    Example: landlord entry clause that explicitly requires 24-hour notice.
+    """
+    if not rule.safe_harbor_patterns:
+        return False
+
+    harbor_re = re.compile(
+        "|".join(rule.safe_harbor_patterns), re.IGNORECASE
+    )
+
+    for chunk in evidence:
+        # Check against the full chunk text, not just the snippet,
+        # so notice language that appears near (but not inside) the snippet still counts
+        full_text = chunk.get("full_chunk", chunk["text"])
+        if harbor_re.search(full_text):
+            return True
+
+    return False
 
 
 def _render_explanation(rule: Rule, evidence: list[dict]) -> str:
@@ -129,32 +148,115 @@ def evaluate(chunks: list[dict],
         return []
 
     flags: list[RiskFlag] = []
+
     for rule in rules:
         evidence = _match_rule(rule, chunks)
         if not evidence:
             continue
 
+        # --- Numeric threshold gate (e.g. deposit amount check) ---
         if rule.threshold_check and terms:
             try:
                 if not rule.threshold_check(terms):
+                    log.debug(f"{rule.rule_id} skipped — threshold not met")
                     continue
             except Exception as e:
                 log.warning(f"Threshold check failed for {rule.rule_id}: {e}")
+
+        # --- Safe harbor check ---
+        harbor_found = _check_safe_harbor(rule, evidence)
+        if harbor_found:
+            if rule.safe_harbor_skips:
+                # Clause is genuinely fine — drop the flag entirely
+                log.debug(f"{rule.rule_id} skipped — safe harbor language found")
+                continue
+            else:
+                # Clause exists but has protection — downgrade to LOW
+                effective_severity = "LOW"
+                effective_plain_english = (
+                    rule.safe_harbor_note
+                    if rule.safe_harbor_note
+                    else f"✅ This clause appears to include standard protections. {rule.plain_english}"
+                )
+        else:
+            effective_severity = rule.severity
+            effective_plain_english = rule.plain_english
 
         match_strength = round(min(0.5 + len(evidence) * 0.1, 0.99), 2)
 
         flags.append(RiskFlag(
             rule_id=rule.rule_id,
             name=rule.name,
-            severity=rule.severity,
+            severity=effective_severity,
             category=rule.category,
-            plain_english=rule.plain_english,
+            plain_english=effective_plain_english,
             explanation=_render_explanation(rule, evidence),
             negotiation_script=rule.negotiation_script,
             typical_range=rule.typical_range,
             evidence=evidence[:3],
             match_strength=match_strength,
             learn_more=rule.learn_more,
+        ))
+
+    # --- Unknown clause detection ---
+    # Track which chunks were matched by at least one rule
+    matched_chunk_ids = set()
+    for flag in flags:
+        for evidence in flag.evidence:
+            matched_chunk_ids.add(evidence["chunk_id"])
+
+    # Flag chunks that matched NO rules and are long enough to matter
+    unmatched = [
+        c for c in chunks
+        if c["chunk_id"] not in matched_chunk_ids
+        and len(c["text"].split()) > 40
+        and not any(skip in c["text"].lower() for skip in [
+            "table of contents",
+            "article i",
+            "article ii",
+            "section 1.",
+            "section 2.",
+            "........",
+            "exhibit",
+            "schedule",
+        ])
+    ]
+
+    if unmatched:
+        sample = unmatched[0]
+        flags.append(RiskFlag(
+            rule_id="UNKNOWN_CLAUSE",
+            name="Unusual clause — legal review recommended",
+            severity="LOW",
+            category="unknown",
+            plain_english=(
+                "One or more clauses in this contract didn't match our "
+                "standard risk patterns. This doesn't mean they're safe — "
+                "it means they're unusual. We recommend reviewing these "
+                "sections with a legal professional before signing."
+            ),
+            explanation=(
+                f"We detected {len(unmatched)} clause(s) outside our "
+                f"standard rulebook. Sample clause starts at page "
+                f"{sample['page_num']}. These may be standard for your "
+                f"industry or genuinely unusual — a professional can confirm."
+            ),
+            negotiation_script=(
+                "Before signing, ask your attorney to review the flagged "
+                "sections. Ask specifically: 'Is this clause standard for "
+                "this type of agreement in our industry?'"
+            ),
+            typical_range="All clauses should be explainable in plain English",
+            evidence=[{
+                "chunk_id": c["chunk_id"],
+                "page_num": c["page_num"],
+                "text": c["text"][:300] + "..." if len(c["text"]) > 300 else c["text"],
+                "full_chunk": c["text"],
+                "matched_keywords": [],
+                "hit_count": 0,
+            } for c in unmatched[:2]],
+            match_strength=0.0,
+            learn_more="ClauseLens flags unknown clauses rather than guessing — trust requires honesty.",
         ))
 
     severity_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}

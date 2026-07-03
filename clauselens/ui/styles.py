@@ -284,6 +284,19 @@ h3 {
     border-radius: 10px;
 }
 
+/* Score disclaimer */
+.score-disclaimer {
+    background: #1c1a14;
+    border-left: 3px solid #f59e0b;
+    color: #a1a1aa;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    padding: 0.65rem 1rem;
+    margin: 0.75rem auto 0;
+    max-width: 520px;
+    border-radius: 0 6px 6px 0;
+}
+
 /* Tabs */
 [data-testid="stTabs"] button[role="tab"] {
     background: transparent;

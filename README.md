@@ -32,7 +32,7 @@ Every day, millions of people sign contracts they haven't read. Rental agreement
 
 ## ✨ The Solution
 
-**ClauseLens** is a privacy-first contract risk analyzer built for the 99% — consumers, freelancers, employees, small businesses, and privacy-sensitive enterprises.
+**ClauseLens** is a privacy-first contract risk analyzer. Built for IT staffing and consulting firms. Expanding to all small businesses.
 
 | ✅ What ClauseLens Does | ❌ What It Doesn't Do |
 |---|---|
@@ -78,6 +78,8 @@ Every day, millions of people sign contracts they haven't read. Rental agreement
 
 </details>
 
+
+![ClauseLens Architecture](docs/architecture.png)
 ---
 
 ## 🧠 How It Works
@@ -243,11 +245,13 @@ Want to add your own rule? Drop it into `clauselens/rulebook/rental_rules.py` �
 
 ClauseLens is designed as a **deployable solution** for:
 
-- **Consumers** — before signing any contract, get a heads-up on red flags
+- **IT staffing and consulting firms** — flag risk in client MSAs, SOWs, and staffing agreements before signing
 - **Small businesses** — review vendor agreements, SaaS terms, freelance contracts
 - **HR teams** — audit employment offer letters before extending
 - **Legal ops at enterprises** — first-pass review, privacy-guaranteed
 - **Privacy-sensitive industries** — healthcare, finance, defense — where contracts cannot be sent to OpenAI
+
+> ClauseLens doesn't replace your lawyer. It tells you exactly which 3 clauses to focus on when you call them — cutting a 5-hour review down to a 30-minute conversation. Reduce your legal review time and cost before consulting an attorney.
 
 **Deploy anywhere:**
 

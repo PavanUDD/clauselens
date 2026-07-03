@@ -16,19 +16,19 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384
 
 # Chunking
-CHUNK_SIZE = 180           # words per chunk
-CHUNK_OVERLAP = 40         # word overlap between chunks
+CHUNK_SIZE = 80           # words per chunk
+CHUNK_OVERLAP = 20         # word overlap between chunks
 
 # Retrieval
 DEFAULT_TOP_K = 5
 MIN_SIMILARITY_SCORE = 0.35
 
 # Risk engine
-SEVERITY_WEIGHTS = {"HIGH": 15, "MEDIUM": 7, "LOW": 2}
+SEVERITY_WEIGHTS = {"HIGH": 10 , "MEDIUM": 4, "LOW": 1}
 MAX_HEALTH_SCORE = 100
 
 # Contract types
-SUPPORTED_CONTRACT_TYPES = ["rental", "employment", "freelance", "saas", "loan", "unknown"]
+SUPPORTED_CONTRACT_TYPES = ["rental", "employment", "freelance", "saas", "loan", "nda", "vendor", "staffing", "unknown"]
 LAUNCH_CONTRACT_TYPES = ["rental", "employment"]  # fully built
 
 # UI

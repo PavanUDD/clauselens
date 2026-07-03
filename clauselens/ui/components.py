@@ -12,6 +12,10 @@ def render_health_score(health: dict) -> None:
         <div class="health-score-value grade-{grade}">{health['score']}<span style="font-size:2rem;color:#71717a;">/100</span></div>
         <div class="health-score-label">Grade {grade} — {health['label']}</div>
     </div>
+    <div class="score-disclaimer">
+        ⚠️ This score reflects detected risk patterns, not legal safety. A high score does not mean a contract is safe to sign.
+        Always consult a licensed attorney for contracts with significant financial consequences.
+    </div>
     """, unsafe_allow_html=True)
 
 
@@ -81,7 +85,7 @@ def render_risk_flag(flag: dict, index: int) -> None:
 
         st.markdown(f"""
         <div class="nego-block">
-            <div class="nego-label">💬 Suggested Negotiation Script</div>
+            <div class="nego-label">💬 Suggested language to start the conversation</div>
             {nego}
         </div>
         """, unsafe_allow_html=True)

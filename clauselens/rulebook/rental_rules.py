@@ -74,6 +74,12 @@ RENTAL_RULES: list[Rule] = [
             r"renewed\s+automatically",
         ],
         semantic_queries=["lease automatically renews"],
+        safe_harbor_patterns=[
+            r"month.?to.?month",
+            r"30\s+days?\s+(written\s+)?notice",
+            r"either\s+party\s+may\s+terminate",
+        ],
+        safe_harbor_skips=True,
         plain_english="Your lease renews automatically unless you give notice in time.",
         explanation_template=(
             "This lease auto-renews. If you forget to send notice by the required "
@@ -112,6 +118,22 @@ RENTAL_RULES: list[Rule] = [
         negotiation_script=(
             "I'd like to add a 24-hour written notice requirement for non-emergency "
             "landlord entry, which matches state law in most jurisdictions."
+        ),
+        # --- Safe harbor ---
+        # If the clause already mentions proper advance notice, downgrade to LOW.
+        # We do NOT skip entirely because we still want the user to verify it.
+        safe_harbor_patterns=[
+            r"24.?hour\w*\s+(written\s+)?notice",
+            r"48.?hour\w*\s+(written\s+)?notice",
+            r"advance\s+written\s+notice",
+            r"prior\s+written\s+notice",
+            r"at\s+least\s+\d+\s+hours?'?\s+(written\s+)?notice",
+
+        ],
+        safe_harbor_skips=True,    # proper notice present = skip
+        safe_harbor_note=(
+            "✅ This lease requires advance written notice before entry — "
+            "that's the standard protection. Confirm the notice period is at least 24 hours."
         ),
     ),
 
@@ -181,6 +203,11 @@ RENTAL_RULES: list[Rule] = [
             r"\d+\s*%\s+per\s+(day|month)",
         ],
         semantic_queries=["late payment fee amount"],
+        safe_harbor_patterns=[
+            r"\$\s*\d+",
+            r"\d+\s*%\s+of\s+(monthly\s+)?rent",
+        ],
+        safe_harbor_skips=True,
         plain_english="The late fee for missed rent may be unusually high.",
         explanation_template=(
             "This contract contains late fees. Typical late fees are 5% of monthly rent. "
@@ -320,6 +347,11 @@ RENTAL_RULES: list[Rule] = [
             "Can we make this a 'prevailing party' clause — whoever wins gets legal fees? "
             "One-sided clauses aren't standard."
         ),
+        # Safe harbor: if "prevailing party" language is already in the clause, it's fair
+        safe_harbor_patterns=[
+            r"prevailing\s+party",
+        ],
+        safe_harbor_skips=True,   # prevailing party = genuinely fair, skip the flag
     ),
 
     Rule(
@@ -333,15 +365,25 @@ RENTAL_RULES: list[Rule] = [
             r"damage\s+deposit",
         ],
         semantic_queries=["security deposit amount"],
-        plain_english="Check the security deposit amount — it should typically be 1-2 months rent.",
+        plain_english="Security deposit exceeds 2 months' rent — verify your state's cap.",
         explanation_template=(
-            "This lease requires a security deposit. Typical deposits are 1-2 months rent. "
-            "Deposits above 2 months are aggressive and may be capped by state law."
+            "This lease requires a security deposit above 2 months' rent. "
+            "Many states cap deposits at 1-2 months. Check your local law."
         ),
         typical_range="1-2 months rent",
         negotiation_script=(
             "Could we reduce the security deposit to 1 month's rent? Most states cap "
             "deposits at 2 months, and 1 month is standard."
+        ),
+        # Only fire this rule if deposit > 2x monthly rent.
+        # term_extractor must supply: terms["security_deposit"] and terms["monthly_rent"]
+        # Both values should be floats (dollar amounts).
+        # If either value is missing, we skip the flag (fail safe — don't false-positive).
+        threshold_check=lambda terms: (
+            isinstance(terms.get("security_deposit"), (int, float)) and
+            isinstance(terms.get("monthly_rent"), (int, float)) and
+            terms["monthly_rent"] > 0 and
+            terms["security_deposit"] > 2 * terms["monthly_rent"]
         ),
     ),
 
@@ -467,3 +509,9 @@ RENTAL_RULES: list[Rule] = [
         ),
     ),
 ]
+
+
+
+
+
+

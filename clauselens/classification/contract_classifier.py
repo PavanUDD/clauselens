@@ -40,6 +40,25 @@ CONTRACT_SIGNATURES: dict[str, dict[str, int]] = {
         "interest rate": 5, "apr": 4, "promissory note": 6, "repayment": 4,
         "default": 3, "collateral": 5, "amortization": 5, "maturity date": 5,
         "prepayment": 4, "loan agreement": 6
+    },
+    "nda": {
+        "non-disclosure": 6, "nda": 6, "confidential information": 5,
+        "disclosing party": 6, "receiving party": 6,
+        "confidentiality agreement": 6, "proprietary information": 4,
+        "trade secret": 4, "non disclosure": 6, "keep confidential": 4
+    },
+    "vendor": {
+        "master service agreement": 6, "msa": 5, "vendor": 5,
+        "statement of work": 5, "sow": 4, "deliverable": 4,
+        "acceptance criteria": 5, "work product": 5,
+        "limitation of liability": 5, "net 60": 4, "net 30": 3,
+        "service provider": 4, "indemnification": 4
+    },
+    "staffing": {
+        "staffing agency": 6, "placement": 5, "bench": 5,
+        "right to hire": 6, "conversion fee": 6, "pay rate": 4,
+        "billing rate": 5, "timesheet": 4, "h-1b": 6, "h1b": 6,
+        "visa sponsorship": 6, "temp to perm": 5, "staffing firm": 5
     }
 }
 

@@ -18,15 +18,15 @@ def compute(flags: list[RiskFlag]) -> dict:
     score = max(0, MAX_HEALTH_SCORE - penalty)
 
     if score >= 85:
-        grade, label = "A", "Low Risk"
+        grade, label = "A", "Looks Standard"
     elif score >= 70:
-        grade, label = "B", "Moderate Risk"
+        grade, label = "B", "Review Before Signing"
     elif score >= 50:
-        grade, label = "C", "Elevated Risk"
+        grade, label = "C", "Significant Concerns"
     elif score >= 30:
-        grade, label = "D", "High Risk"
+        grade, label = "D", "Legal Review Recommended"
     else:
-        grade, label = "F", "Severe Risk"
+        grade, label = "F", "Do Not Sign Without Attorney"
 
     result = {
         "score": score,

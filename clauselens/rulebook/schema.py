@@ -14,20 +14,30 @@ class Rule:
       1. `detection_patterns` (regex) must match at least one chunk.
       2. Optional `threshold_check(terms)` — fine-grained numeric check
          (e.g., "deposit > 2 months rent"). Return True to trigger.
+      3. Optional `safe_harbor_patterns` (regex) — if ANY of these match in
+         the SAME chunk as the detection pattern, the rule is either skipped
+         entirely (safe_harbor_skips=True) or downgraded to LOW severity.
+         Use for clauses that are only risky when protective language is ABSENT.
     """
-    rule_id: str                                    # "RENTAL_R001"
-    name: str                                       # Short title
-    contract_types: list[str]                       # ["rental"]
-    severity: Severity                              # "HIGH"/"MEDIUM"/"LOW"
-    category: str                                   # "termination" | "payment" | ...
-    detection_patterns: list[str]                   # regex patterns
-    plain_english: str                              # one-sentence summary
-    explanation_template: str                       # filled with extracted values
-    typical_range: str                              # human-readable benchmark
-    negotiation_script: str                         # ready-to-send suggestion
-    semantic_queries: list[str] = field(default_factory=list)  # for semantic fallback
-    threshold_check: Optional[Callable[[dict], bool]] = None   # fine-grained gate
-    learn_more: Optional[str] = None                # short educational note
+    rule_id: str
+    name: str
+    contract_types: list[str]
+    severity: Severity
+    category: str
+    detection_patterns: list[str]
+    plain_english: str
+    explanation_template: str
+    typical_range: str
+    negotiation_script: str
+    semantic_queries: list[str] = field(default_factory=list)
+    threshold_check: Optional[Callable[[dict], bool]] = None
+    # --- Safe harbor ---
+    safe_harbor_patterns: list[str] = field(default_factory=list)
+    # True  = skip the flag entirely (clause is actually fine)
+    # False = downgrade severity to LOW and surface a softer note
+    safe_harbor_skips: bool = False
+    safe_harbor_note: str = ""   # replaces plain_english when downgraded (not skipped)
+    learn_more: Optional[str] = None
 
 
 @dataclass
@@ -38,11 +48,11 @@ class RiskFlag:
     severity: Severity
     category: str
     plain_english: str
-    explanation: str            # rendered explanation_template
+    explanation: str
     negotiation_script: str
     typical_range: str
-    evidence: list[dict]        # chunks that matched: [{page_num, text, keywords}]
-    match_strength: float       # 0.0 - 0.99, keyword-density heuristic
+    evidence: list[dict]
+    match_strength: float
     learn_more: Optional[str] = None
 
     def to_dict(self) -> dict:
