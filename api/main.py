@@ -15,7 +15,6 @@ from clauselens.classification.contract_classifier import classify
 from clauselens.analysis.risk_engine import evaluate
 from clauselens.analysis.health_score import compute
 from clauselens.analysis.term_extractor import extract_all_terms
-from clauselens.retrieval.search import get_model
 
 MAX_FILE_SIZE_MB = int(os.getenv('MAX_FILE_SIZE_MB', '20'))
 UPLOAD_TIMEOUT_SECONDS = int(os.getenv('UPLOAD_TIMEOUT_SECONDS', '120'))
@@ -73,10 +72,6 @@ JOB_STORE = JobStorage()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     log.info(f'ClauseLens API v{APP_VERSION} starting up')
-    log.info('Warming embedding model...')
-    start = time.time()
-    get_model()
-    log.info(f'Embedding model ready in {time.time()-start:.1f}s')
 
     async def cleanup_loop():
         while True:
@@ -259,17 +254,9 @@ async def get_results(job_id: str):
 
 @app.get('/api/v1/health')
 async def health_check():
-    model_ready = False
-    try:
-        get_model()
-        model_ready = True
-    except Exception:
-        pass
-
     return {
-        'status': 'ok' if model_ready else 'degraded',
+        'status': 'ok',
         'version': APP_VERSION,
-        'model_ready': model_ready,
         'active_jobs': len([
             j for j in JOB_STORE._store.values()
             if j['status'] == 'processing'
