@@ -52,3 +52,15 @@ export interface ApiErrorBody {
   message?: string;
   job_id?: string;
 }
+
+export interface AnalysisRecord {
+  id: string;
+  user_id: string;
+  filename: string;
+  contract_type: string;
+  grade: HealthScore["grade"];
+  high_flags: number;
+  medium_flags: number;
+  low_flags: number;
+  analyzed_at: string;
+}

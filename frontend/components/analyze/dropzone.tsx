@@ -62,7 +62,7 @@ export function Dropzone({ onFileSelected, disabled, error }: DropzoneProps) {
         onDrop={handleDrop}
         aria-disabled={disabled}
         className={cn(
-          "group glass flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed px-6 py-20 text-center shadow-card transition-all duration-200",
+          "group glass flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed px-4 py-14 text-center shadow-card transition-all duration-200 sm:px-6 sm:py-20",
           isDragging
             ? "border-brand-cyan bg-brand-cyan/5 shadow-glow-cyan"
             : "border-white/15 hover:border-brand-cyan/50 hover:shadow-glow-blue",

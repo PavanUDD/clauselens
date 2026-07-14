@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
+    <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
       <div className="mb-12 animate-fade-in-up text-center">
         <h1 className="text-4xl font-bold text-white sm:text-5xl">
           Simple, transparent pricing

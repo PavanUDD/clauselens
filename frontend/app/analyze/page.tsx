@@ -6,19 +6,45 @@ import { Dropzone } from "@/components/analyze/dropzone";
 import { ProcessingState } from "@/components/analyze/processing-state";
 import { ResultsView } from "@/components/analyze/results-view";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/auth-provider";
 import { analyzeContract, getJobResults } from "@/lib/api";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import type { AnalyzeResult } from "@/lib/types";
 
 type Stage = "upload" | "processing" | "results" | "error";
 
 const POLL_INTERVAL_MS = 2000;
 
+async function saveAnalysis(userId: string, result: AnalyzeResult) {
+  if (!isSupabaseConfigured) return;
+  try {
+    await supabase.from("analyses").insert({
+      user_id: userId,
+      filename: result.filename,
+      contract_type: result.contract_type,
+      grade: result.health.grade,
+      high_flags: result.health.high_flags,
+      medium_flags: result.health.medium_flags,
+      low_flags: result.health.low_flags,
+      analyzed_at: result.analyzed_at,
+    });
+  } catch {
+    // Saving analysis history is best-effort and should never block the results view.
+  }
+}
+
 export default function AnalyzePage() {
+  const { user } = useAuth();
   const [stage, setStage] = useState<Stage>("upload");
   const [filename, setFilename] = useState<string>();
   const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user]);
 
   useEffect(() => {
     return () => {
@@ -33,6 +59,9 @@ export default function AnalyzePage() {
         if (status.status === "complete") {
           setResult(status);
           setStage("results");
+          if (userIdRef.current) {
+            void saveAnalysis(userIdRef.current, status);
+          }
           return;
         }
         pollTimer.current = setTimeout(tick, POLL_INTERVAL_MS);
@@ -73,7 +102,7 @@ export default function AnalyzePage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
+    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
       {stage === "upload" && (
         <div className="animate-fade-in-up">
           <div className="mb-8 text-center">

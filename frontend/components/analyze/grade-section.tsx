@@ -17,16 +17,16 @@ export function GradeSection({ health }: { health: HealthScore }) {
   const gradeStyle = GRADE_GLOW[health.grade] ?? GRADE_GLOW.C;
 
   return (
-    <div className="glass animate-fade-in-up rounded-2xl p-8 text-center shadow-card">
+    <div className="glass animate-fade-in-up rounded-2xl p-6 text-center shadow-card sm:p-8">
       <p className="text-sm font-medium uppercase tracking-wide text-slate-400">
         Contract Review Grade
       </p>
-      <div className="relative mx-auto mt-4 flex h-40 w-40 items-center justify-center">
+      <div className="relative mx-auto mt-4 flex h-32 w-32 items-center justify-center sm:h-40 sm:w-40">
         <span
           aria-hidden
           className={`absolute inset-0 rounded-full blur-3xl ${gradeStyle.glow}`}
         />
-        <p className={`relative text-8xl font-extrabold leading-none ${gradeStyle.text}`}>
+        <p className={`relative text-7xl font-extrabold leading-none sm:text-8xl ${gradeStyle.text}`}>
           {health.grade}
         </p>
       </div>

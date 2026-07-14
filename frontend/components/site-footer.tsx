@@ -1,7 +1,7 @@
 export function SiteFooter() {
   return (
     <footer className="border-t border-white/5 bg-brand-navy">
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <p className="text-xs leading-relaxed text-slate-500">
           ClauseLens is an automated risk detection tool, not a law firm.
           This is not legal advice. Always consult a licensed attorney
