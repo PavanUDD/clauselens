@@ -51,6 +51,7 @@ NEGATION_IS_THE_POINT = {
     "RENTAL_R008",
     "EMP_R003",      # No severance
     "EMP_R008",      # No overtime
+    "VENDOR_R016",   # No cap on liability / no obligation to carry insurance
 }
 
 

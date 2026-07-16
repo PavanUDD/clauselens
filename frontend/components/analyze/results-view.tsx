@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { GradeSection } from "@/components/analyze/grade-section";
 import { CategoryBreakdown } from "@/components/analyze/category-breakdown";
 import { DetectedIssues } from "@/components/analyze/detected-issues";
+import { CoverageWarning, isOutOfCoverage } from "@/components/analyze/coverage-warning";
 import { openReportWindow } from "@/lib/report";
 import type { AnalyzeResult } from "@/lib/types";
 
@@ -28,6 +29,9 @@ export function ResultsView({
 
   return (
     <div className="space-y-6">
+      {isOutOfCoverage(result.contract_type, result.confidence) && (
+        <CoverageWarning />
+      )}
       <GradeSection health={result.health} />
       <CategoryBreakdown flags={result.flags} />
       <DetectedIssues flags={result.flags} health={result.health} />
