@@ -6,6 +6,9 @@ const SUPPORTED_CONTRACT_TYPES = [
   "employment",
   "nda",
   "rental",
+  "freelance",
+  "saas",
+  "loan",
 ];
 
 const CONFIDENCE_THRESHOLD = 0.5;
