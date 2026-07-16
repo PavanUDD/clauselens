@@ -1,10 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 
 export function SiteHeader() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/");
+  };
 
   return (
     <header className="glass sticky top-0 z-50 border-x-0 border-t-0">
@@ -29,12 +37,22 @@ export function SiteHeader() {
           </Link>
           {!loading &&
             (user ? (
-              <Link
-                href="/dashboard"
-                className="max-w-27.5 truncate text-xs text-slate-300 transition-colors duration-200 hover:text-white sm:max-w-45 sm:text-sm"
-              >
-                {user.email}
-              </Link>
+              <>
+                <Link
+                  href="/dashboard"
+                  className="max-w-27.5 truncate text-xs text-slate-300 transition-colors duration-200 hover:text-white sm:max-w-45 sm:text-sm"
+                >
+                  {user.email}
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex shrink-0 items-center gap-1 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs text-slate-300 transition-colors duration-200 hover:bg-white/5 hover:text-white sm:px-3 sm:text-sm"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </>
             ) : (
               <Link
                 href="/login"
